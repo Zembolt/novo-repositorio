@@ -1,0 +1,20 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class trocarFase : MonoBehaviour
+{
+    public string tf; // Nome da cena que você quer carregar
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            carregarFase();
+        }
+    }
+
+    private void carregarFase()
+    {
+        SceneManager.LoadScene(tf); // Usa a variável tf
+    }
+}
