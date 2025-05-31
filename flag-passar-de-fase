@@ -1,0 +1,122 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class FlagCheckpoint : MonoBehaviour
+{
+    [Header("Configurações")]
+    [Tooltip("Nome da próxima cena/nível para carregar")]
+    public string nextLevelName;
+    
+    [Tooltip("Tempo de espera antes de ir para o próximo nível (segundos)")]
+    public float waitTime = 2.0f;
+    
+    [Tooltip("Efeito de partículas ao atingir o checkpoint (opcional)")]
+    public GameObject victoryParticles;
+    
+    [Header("Áudio")]
+    [Tooltip("Som ao atingir o checkpoint")]
+    public AudioClip checkpointSound;
+    
+    [Header("Animação")]
+    [Tooltip("Ative se a bandeira tiver animação")]
+    public bool hasAnimation = true;
+
+    [Tooltip("Nome do parâmetro de animação para ativação")]
+    public string animationTriggerName = "Activated"; // Parâmetro ajustável no Inspector
+
+    // Referências privadas
+    private Animator animator;
+    private AudioSource audioSource;
+    private bool checkpointReached = false;
+    
+    void Start()
+    {
+        // Obtém componentes
+        animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        
+        // Se não tiver AudioSource, adiciona um
+        if (audioSource == null && checkpointSound != null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+    }
+    
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player") && !checkpointReached)
+        {
+            ReachCheckpoint(collision.gameObject);
+        }
+    }
+    
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") && !checkpointReached)
+        {
+            ReachCheckpoint(other.gameObject);
+        }
+    }
+    
+    private void ReachCheckpoint(GameObject player)
+    {
+        checkpointReached = true;
+        SaveCheckpoint();
+
+        // Toca o som de checkpoint
+        if (audioSource != null && checkpointSound != null)
+        {
+            audioSource.PlayOneShot(checkpointSound);
+        }
+
+        // Ativa animação da bandeira (se houver)
+        if (animator != null && hasAnimation)
+        {
+            if (!string.IsNullOrEmpty(animationTriggerName))
+            {
+                animator.SetTrigger(animationTriggerName);
+            }
+            else
+            {
+                Debug.LogWarning("O nome do parâmetro de animação não foi definido!");
+            }
+        }
+
+        // Ativa sistema de partículas
+        if (victoryParticles != null)
+        {
+            victoryParticles.SetActive(true);
+        }
+
+        StartCoroutine(GoToNextLevel());
+    }
+    
+    private void SaveCheckpoint()
+    {
+        PlayerPrefs.SetString("LastCheckpoint", SceneManager.GetActiveScene().name);
+        PlayerPrefs.SetInt("CheckpointReached", 1);
+
+        if (GameController.gc != null)
+        {
+            GameController.gc.SaveProgress();
+        }
+
+        PlayerPrefs.Save();
+    }
+    
+    private IEnumerator GoToNextLevel()
+    {
+        yield return new WaitForSeconds(waitTime);
+
+        if (!string.IsNullOrEmpty(nextLevelName))
+        {
+            SceneManager.LoadScene(nextLevelName);
+        }
+        else
+        {
+            Debug.LogWarning("Nome do próximo nível não foi definido!");
+        }
+    }
+}
