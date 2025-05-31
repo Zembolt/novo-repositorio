@@ -1,0 +1,50 @@
+Inimigo
+
+using UnityEngine;
+
+public class Inimigo : MonoBehaviour
+{
+    private Transform posicaoJogador;
+    public float velocidadeDoInimigo = 2f;
+
+    void Start()
+    {
+        EncontrarJogador(); // Garante que o inimigo sempre encontre o jogador
+    }
+
+    void Update()
+    {
+        if (posicaoJogador != null)
+        {
+            SeguirJogador();
+        }
+    }
+
+    private void EncontrarJogador()
+    {
+        GameObject jogador = GameObject.FindGameObjectWithTag("Player");
+
+        if (jogador != null)
+        {
+            posicaoJogador = jogador.transform;
+        }
+        else
+        {
+            Debug.LogError("Jogador com tag 'Player' não encontrado na cena! Tentando novamente...");
+            Invoke("EncontrarJogador", 1f); // Tenta achar o jogador após 1 segundo
+        }
+    }
+
+    private void SeguirJogador()
+    {
+        if (posicaoJogador != null)
+        {
+            Vector2 novaPosicao = new Vector2(
+                Mathf.MoveTowards(transform.position.x, posicaoJogador.position.x, velocidadeDoInimigo * Time.deltaTime),
+                transform.position.y
+            );
+
+            transform.position = novaPosicao;
+        }
+    }
+}
