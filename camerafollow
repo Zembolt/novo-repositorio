@@ -1,0 +1,31 @@
+using UnityEngine;
+
+public class CameraFollow : MonoBehaviour
+{
+    public Transform target; // o jogador
+    public Vector3 offset; // quanto a câmera fica afastada (opcional)
+    public float smoothSpeed = 0.125f;
+
+    void Update()
+    {
+        // Verifica se perdeu o target (ex: ao mudar de cena) e tenta encontrá-lo de novo
+        if (target == null)
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+            if (player != null)
+            {
+                target = player.transform;
+            }
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (target != null)
+        {
+            Vector3 desiredPosition = target.position + offset;
+            Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+            transform.position = new Vector3(smoothedPosition.x, offset.y, transform.position.z);
+        }
+    }
+}
