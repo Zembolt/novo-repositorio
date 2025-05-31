@@ -1,0 +1,61 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GameController : MonoBehaviour
+{
+    public static GameController gc;
+    public Text coinsText;
+    public int coins;
+
+    void Awake()
+    {
+        if (gc == null)
+        {
+            gc = this;
+            DontDestroyOnLoad(gameObject); // Mantém o GameController entre cenas
+        }
+        else if (gc != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    void Start()
+    {
+        // Inicializa o texto das moedas
+        UpdateCoinsText();
+    }
+
+    // Método para adicionar moedas
+    public void AddCoins(int amount)
+    {
+        coins += amount;
+        UpdateCoinsText();
+    }
+
+    // Método para atualizar o texto das moedas na UI
+    void UpdateCoinsText()
+    {
+        if (coinsText != null)
+        {
+            coinsText.text = "Moedas: " + coins.ToString();
+        }
+    }
+
+    // Salvar o progresso quando o jogador atinge um checkpoint
+    public void SaveProgress()
+    {
+        PlayerPrefs.SetInt("Coins", coins);
+        PlayerPrefs.Save();
+    }
+
+    // Carregar o progresso salvo anteriormente
+    public void LoadProgress()
+    {
+        if (PlayerPrefs.HasKey("Coins"))
+        {
+            coins = PlayerPrefs.GetInt("Coins");
+            UpdateCoinsText();
+        }
+    }
+}
